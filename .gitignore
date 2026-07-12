@@ -5,3 +5,6 @@ tmp/
 /data/
 *.log
 .gateway-token
+
+# Temp Mail cache
+*temp-mail-cache.json

@@ -82,6 +82,14 @@ if (hasHFToken) {
 } else {
   console.log('Hugging Face Storage: disabled (set HF_TOKEN to enable persistent memory)');
 }
+
+// Temp Mail info
+const TEMP_MAIL_TOOL = join(process.cwd(), 'temp-mail-tool.mjs');
+if (existsSync(TEMP_MAIL_TOOL)) {
+  console.log('Temp Mail: enabled (guerrillamail.com API)');
+} else {
+  console.log('Temp Mail: skill file not found');
+}
 console.log('===========================\n');
 
 /**
