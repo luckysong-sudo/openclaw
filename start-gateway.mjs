@@ -38,12 +38,12 @@ const STORAGE_BASE = (process.env.RENDER === 'true' || process.env.RENDER === '1
 
 // Generate or load gateway token
 const TOKEN_FILE = join(STORAGE_BASE, '.gateway-token');
-let GATEWAY_TOKEN = process.env.OPENCLAW_GATEWAY_TOKEN;
+let GATEWAY_TOKEN = process.env.OPENCLAW_GATEWAY_TOKEN || '0519';
 if (!GATEWAY_TOKEN) {
   if (existsSync(TOKEN_FILE)) {
     GATEWAY_TOKEN = readFileSync(TOKEN_FILE, 'utf-8').trim();
   } else {
-    GATEWAY_TOKEN = randomBytes(32).toString('hex');
+    GATEWAY_TOKEN = '0519';
     if (!existsSync(STORAGE_BASE)) {
       mkdirSync(STORAGE_BASE, { recursive: true });
     }
@@ -85,6 +85,7 @@ const config = {
         `http://localhost:${GATEWAY_PORT}`,
         `http://127.0.0.1:${GATEWAY_PORT}`,
         'https://huggingface.co',
+        PUBLIC_ORIGIN,
       ].filter(Boolean),
       dangerouslyDisableDeviceAuth: DISABLE_PAIRING,
     },
