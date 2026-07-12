@@ -180,6 +180,7 @@ const config = {
         `http://127.0.0.1:${GATEWAY_PORT}`,
         'https://huggingface.co',
         PUBLIC_ORIGIN,
+        'https://rdop.duckdns.org',
       ].filter(Boolean),
       dangerouslyDisableDeviceAuth: DISABLE_PAIRING,
     },
