@@ -20,6 +20,11 @@ const GATEWAY_PORT = parseInt(process.env.OPENCLAW_GATEWAY_PORT || String(PORT),
 const PROVIDER_ID = process.env.OPENCLAW_PROVIDER_ID || 'agnes';
 const MODEL_ID = process.env.OPENCLAW_MODEL_ID || 'agnes-2.0-flash';
 const BASE_URL = process.env.AGNES_BASE_URL || 'https://apihub.agnes-ai.com/v1';
+
+// NVIDIA API 配置
+const NVIDIA_API_KEY = process.env.NVIDIA_API_KEY || '';
+const NVIDIA_BASE_URL = process.env.NVIDIA_BASE_URL || 'https://integrate.api.nvidia.com/v1';
+const NVIDIA_MODEL_ID = process.env.NVIDIA_MODEL_ID || 'z-ai/glm-5.2';
 const DISABLE_PAIRING = process.env.OPENCLAW_DISABLE_DEVICE_PAIRING === 'true';
 const TZ = process.env.TZ || 'Asia/Shanghai';
 const PUBLIC_ORIGIN = process.env.OPENCLAW_PUBLIC_ORIGIN || `https://${process.env.RENDER_EXTERNAL_HOSTNAME || 'localhost'}:${PORT}`;
@@ -205,6 +210,22 @@ const config = {
   models: {
     mode: 'merge',
     providers: {
+      // NVIDIA API - 主模型 (优先使用)
+      nvidia: {
+        baseUrl: NVIDIA_BASE_URL,
+        apiKey: '${NVIDIA_API_KEY}',
+        api: 'openai-completions',
+        timeoutSeconds: 300,
+        models: [
+          {
+            id: NVIDIA_MODEL_ID,
+            name: 'GLM-5.2',
+            contextWindow: Math.min(CONTEXT_WINDOW, 200000),
+            maxTokens: Math.min(MAX_TOKENS, 16384),
+          },
+        ],
+      },
+      // Agnes API - 备用模型
       [PROVIDER_ID]: {
         baseUrl: BASE_URL,
         apiKey: '${AGNES_API_KEY}',
@@ -226,8 +247,8 @@ const config = {
       workspace: join(OPENCLAW_ROOT, 'workspace'),
       userTimezone: TZ,
       model: {
-        primary: `${PROVIDER_ID}/${MODEL_ID}`,
-        fallbacks: [],
+        primary: `nvidia/${NVIDIA_MODEL_ID}`,  // 优先使用 NVIDIA GLM-5.2
+        fallbacks: [`agnes/${MODEL_ID}`],        // 备用 Agnes
       },
       sandbox: { mode: 'off' },
       memorySearch: { enabled: true },

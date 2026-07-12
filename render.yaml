@@ -58,4 +58,9 @@ services:
         sync: false
       - key: HF_TOKEN
         sync: false
+      # NVIDIA API 配置
+      - key: NVIDIA_API_KEY
+        sync: false
+      - key: NVIDIA_MODEL_ID
+        value: "z-ai/glm-5.2"
     autoDeploy: true
