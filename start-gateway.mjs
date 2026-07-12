@@ -6,7 +6,7 @@
  */
 
 import { spawn } from 'child_process';
-import { writeFileSync, mkdirSync, existsSync } from 'fs';
+import { writeFileSync, mkdirSync, existsSync, readFileSync } from 'fs';
 import { join } from 'path';
 import { randomBytes } from 'crypto';
 
@@ -40,7 +40,7 @@ const TOKEN_FILE = join(STORAGE_BASE, '.gateway-token');
 let GATEWAY_TOKEN = process.env.OPENCLAW_GATEWAY_TOKEN;
 if (!GATEWAY_TOKEN) {
   if (existsSync(TOKEN_FILE)) {
-    GATEWAY_TOKEN = require('fs').readFileSync(TOKEN_FILE, 'utf-8').trim();
+    GATEWAY_TOKEN = readFileSync(TOKEN_FILE, 'utf-8').trim();
   } else {
     GATEWAY_TOKEN = randomBytes(32).toString('hex');
     if (!existsSync(STORAGE_BASE)) {
