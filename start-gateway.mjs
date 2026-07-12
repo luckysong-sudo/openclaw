@@ -12,7 +12,8 @@ import { randomBytes } from 'crypto';
 
 // Get port from environment (Render provides this)
 const PORT = parseInt(process.env.PORT || '10000', 10);
-const GATEWAY_PORT = parseInt(process.env.OPENCLAW_GATEWAY_PORT || '18789', 10);
+// Use Render's PORT for the gateway so Render can detect open ports
+const GATEWAY_PORT = parseInt(process.env.OPENCLAW_GATEWAY_PORT || String(PORT), 10);
 
 // Environment variables
 const PROVIDER_ID = process.env.OPENCLAW_PROVIDER_ID || 'agnes';
