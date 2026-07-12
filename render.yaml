@@ -42,7 +42,7 @@ services:
         value: "true"
         sync: false
       - key: HF_DATASET_ID
-        value: "luckysong-sudo/openclaw-storage"
+        value: "officelucky/openclawdatas"
         sync: false
       - key: HF_TOKEN
         sync: false

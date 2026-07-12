@@ -38,7 +38,7 @@ const STORAGE_SUBDIR = process.env.OPENCLAW_STORAGE_SUBDIR || 'openclaw';
 const STORAGE_BASE = (process.env.RENDER === 'true' || process.env.RENDER === '1') ? '/tmp/openclaw' : (process.env.OPENCLAW_STORAGE_PATH || '/tmp/openclaw');
 
 // Hugging Face Storage settings
-const HF_DATASET_ID = process.env.HF_DATASET_ID || 'luckysong-sudo/openclaw-storage';
+const HF_DATASET_ID = process.env.HF_DATASET_ID || 'officelucky/openclawdatas';
 const HF_TOKEN = process.env.HF_TOKEN || '';
 const HF_SYNC_ON_START = process.env.HF_SYNC_ON_START !== 'false';
 const HF_SYNC_ON_STOP = process.env.HF_SYNC_ON_STOP !== 'false';
