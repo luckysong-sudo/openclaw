@@ -249,7 +249,7 @@ const config = {
     shell: {
       enabled: true,
       mode: 'passthrough',
-      workspaceBound: true,
+      workspaceBound: false,
     },
   },
   skills: {
