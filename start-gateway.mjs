@@ -353,7 +353,7 @@ console.log(`Starting OpenClaw Gateway on port ${GATEWAY_PORT}...`);
 const gatewayArgs = [
   'openclaw', 'gateway',
   '--port', String(GATEWAY_PORT),
-  '--bind', 'lan',
+  '--bind', '0.0.0.0',
 ];
 if (GATEWAY_TOKEN) {
   gatewayArgs.push('--token', GATEWAY_TOKEN);
@@ -368,8 +368,13 @@ const gatewayProcess = spawn(gatewayArgs[0], gatewayArgs.slice(1), {
     OPENCLAW_STATE_DIR: OPENCLAW_ROOT,
     OPENCLAW_WORKSPACE_DIR: join(OPENCLAW_ROOT, 'workspace'),
     PORT: String(GATEWAY_PORT),
+    HOST: '0.0.0.0',
   },
+  detached: true,
 });
+
+// Unref to keep gateway running when main process exits
+gatewayProcess.unref();
 
 gatewayProcess.on('error', (err) => {
   console.error('Failed to start OpenClaw gateway:', err);
@@ -379,9 +384,26 @@ gatewayProcess.on('error', (err) => {
 gatewayProcess.on('exit', (code) => {
   if (code !== 0 && code !== null) {
     console.error(`Gateway exited with code ${code}`);
-    process.exit(code);
   }
 });
+
+// Keep main process alive
+process.on('SIGTERM', () => {
+  console.log('Received SIGTERM, cleaning up...');
+  gatewayProcess.kill('SIGTERM');
+  process.exit(0);
+});
+
+process.on('SIGINT', () => {
+  console.log('Received SIGINT, cleaning up...');
+  gatewayProcess.kill('SIGINT');
+  process.exit(0);
+});
+
+// Wait for gateway to start
+setTimeout(() => {
+  console.log(`Gateway should be running on port ${GATEWAY_PORT}`);
+}, 3000);
 
 // Handle shutdown gracefully - upload memory before exiting
 async function gracefulShutdown(signal) {
