@@ -177,7 +177,7 @@ const config = {
     mode: 'local',
     port: GATEWAY_PORT,
     bind: 'lan',
-    auth: { mode: 'token' },
+    auth: { mode: 'none' },
     controlUi: {
       enabled: true,
       basePath: '/',
