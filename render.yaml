@@ -35,4 +35,15 @@ services:
         value: "true"
       - key: OPENCLAW_TELEGRAM_ENABLED
         value: "true"
+      - key: HF_SYNC_ON_START
+        value: "true"
+        sync: false
+      - key: HF_SYNC_ON_STOP
+        value: "true"
+        sync: false
+      - key: HF_DATASET_ID
+        value: "luckysong-sudo/openclaw-storage"
+        sync: false
+      - key: HF_TOKEN
+        sync: false
     autoDeploy: true

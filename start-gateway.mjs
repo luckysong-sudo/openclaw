@@ -6,6 +6,7 @@
  */
 
 import { spawn } from 'child_process';
+import { execSync } from 'child_process';
 import { writeFileSync, mkdirSync, existsSync, readFileSync } from 'fs';
 import { join } from 'path';
 import { randomBytes } from 'crypto';
@@ -35,6 +36,12 @@ const TELEGRAM_DM_POLICY = process.env.TELEGRAM_DM_POLICY || 'open';
 // Storage settings
 const STORAGE_SUBDIR = process.env.OPENCLAW_STORAGE_SUBDIR || 'openclaw';
 const STORAGE_BASE = (process.env.RENDER === 'true' || process.env.RENDER === '1') ? '/tmp/openclaw' : (process.env.OPENCLAW_STORAGE_PATH || '/tmp/openclaw');
+
+// Hugging Face Storage settings
+const HF_DATASET_ID = process.env.HF_DATASET_ID || 'luckysong-sudo/openclaw-storage';
+const HF_TOKEN = process.env.HF_TOKEN || '';
+const HF_SYNC_ON_START = process.env.HF_SYNC_ON_START !== 'false';
+const HF_SYNC_ON_STOP = process.env.HF_SYNC_ON_STOP !== 'false';
 
 // Generate or load gateway token
 const TOKEN_FILE = join(STORAGE_BASE, '.gateway-token');
@@ -67,7 +74,94 @@ console.log(`Model: ${MODEL_ID}`);
 console.log(`Public Origin: ${PUBLIC_ORIGIN}`);
 console.log(`Storage: ${OPENCLAW_ROOT}`);
 console.log(`Telegram: ${TELEGRAM_BOT_TOKEN ? 'enabled' : 'disabled'}`);
+
+// Hugging Face Storage info
+const hasHFToken = !!HF_TOKEN;
+if (hasHFToken) {
+  console.log(`Hugging Face Storage: enabled (dataset: ${HF_DATASET_ID})`);
+} else {
+  console.log('Hugging Face Storage: disabled (set HF_TOKEN to enable persistent memory)');
+}
 console.log('===========================\n');
+
+/**
+ * 从 Hugging Face 下载记忆数据
+ */
+async function downloadFromHF() {
+  if (!hasHFToken || !HF_SYNC_ON_START) {
+    console.log('⏭️  跳过 HF 下载');
+    return;
+  }
+  
+  console.log('📥 从 Hugging Face 下载记忆数据...');
+  try {
+    const hfDataDir = join(STORAGE_BASE, 'hf-download');
+    mkdirSync(hfDataDir, { recursive: true });
+    
+    // 登录 Hugging Face
+    execSync(`echo "${HF_TOKEN}" | huggingface-cli login --token-stdin`, { 
+      stdio: 'pipe',
+      env: { ...process.env }
+    });
+    
+    // 下载数据集
+    execSync(`huggingface-cli download ${HF_DATASET_ID} data/ --repo-type dataset --local-dir "${hfDataDir}"`, {
+      stdio: 'inherit',
+      env: { ...process.env }
+    });
+    
+    // 复制数据到存储目录
+    const srcDir = join(hfDataDir, 'data');
+    if (existsSync(srcDir)) {
+      execSync(`cp -r ${srcDir}/* ${STORAGE_BASE}/ 2>/dev/null || true`, { shell: '/bin/bash' });
+      console.log('✅ 记忆数据已恢复');
+    }
+    
+    // 清理下载目录
+    execSync(`rm -rf "${hfDataDir}"`, { shell: '/bin/bash' });
+  } catch (error) {
+    console.log('ℹ️  没有现有数据（首次运行）');
+  }
+}
+
+/**
+ * 上传记忆数据到 Hugging Face
+ */
+async function uploadToHF() {
+  if (!hasHFToken || !HF_SYNC_ON_STOP) {
+    console.log('⏭️  跳过 HF 上传');
+    return;
+  }
+  
+  console.log('📤 上传记忆数据到 Hugging Face...');
+  try {
+    const uploadDir = join(STORAGE_BASE, 'hf-upload');
+    mkdirSync(uploadDir, { recursive: true });
+    
+    // 复制需要持久化的数据
+    const srcPath = join(STORAGE_BASE, STORAGE_SUBDIR);
+    if (existsSync(srcPath)) {
+      execSync(`cp -r ${srcPath}/* ${uploadDir}/ 2>/dev/null || true`, { shell: '/bin/bash' });
+    }
+    
+    // 登录并上传
+    execSync(`echo "${HF_TOKEN}" | huggingface-cli login --token-stdin`, { 
+      stdio: 'pipe',
+      env: { ...process.env }
+    });
+    
+    execSync(`cd "${uploadDir}" && huggingface-cli upload ${HF_DATASET_ID} data/ --repo-type dataset`, {
+      stdio: 'inherit',
+      env: { ...process.env }
+    });
+    
+    // 清理上传目录
+    execSync(`rm -rf "${uploadDir}"`, { shell: '/bin/bash' });
+    console.log('✅ 记忆数据已保存');
+  } catch (error) {
+    console.error('❌ 上传失败:', error.message);
+  }
+}
 
 // Build OpenClaw configuration
 const config = {
@@ -158,13 +252,11 @@ if (TELEGRAM_BOT_TOKEN && TELEGRAM_ENABLED) {
     .map(id => id.trim())
     .filter(id => /^\d+$/.test(id));
 
-  // Determine DM policy
   let dmPolicy = TELEGRAM_DM_POLICY.toLowerCase();
   if (!['open', 'pairing', 'allowlist', 'disabled'].includes(dmPolicy)) {
     dmPolicy = 'open';
   }
   
-  // If allowlist mode but no user IDs set, fall back to open
   if (dmPolicy === 'allowlist' && allowedUserIds.length === 0) {
     dmPolicy = 'open';
   }
@@ -183,7 +275,6 @@ if (TELEGRAM_BOT_TOKEN && TELEGRAM_ENABLED) {
     },
   };
 
-  // Set allowed users if using allowlist mode
   if (dmPolicy === 'allowlist' && allowedUserIds.length > 0) {
     config.channels.telegram.allowFrom = allowedUserIds;
     config.commands = {
@@ -191,7 +282,6 @@ if (TELEGRAM_BOT_TOKEN && TELEGRAM_ENABLED) {
     };
   }
 
-  // Add wildcard to allowFrom for open DM policy
   if (dmPolicy === 'open') {
     config.channels.telegram.allowFrom = ['*'];
   }
@@ -241,15 +331,22 @@ gatewayProcess.on('exit', (code) => {
   }
 });
 
-// Handle shutdown gracefully
-process.on('SIGTERM', () => {
-  console.log('SIGTERM received, shutting down...');
-  gatewayProcess.kill('SIGTERM');
+// Handle shutdown gracefully - upload memory before exiting
+async function gracefulShutdown(signal) {
+  console.log(`${signal} received, shutting down...`);
+  console.log('Saving memory before shutdown...');
+  await uploadToHF();
+  gatewayProcess.kill(signal);
   process.exit(0);
-});
+}
 
-process.on('SIGINT', () => {
-  console.log('SIGINT received, shutting down...');
-  gatewayProcess.kill('SIGINT');
-  process.exit(0);
+process.on('SIGTERM', () => gracefulShutdown('SIGTERM'));
+process.on('SIGINT', () => gracefulShutdown('SIGINT'));
+
+// Main startup sequence: download memory, then start gateway
+console.log('Starting initialization sequence...');
+downloadFromHF().then(() => {
+  console.log('\n🚀 All set! Gateway starting...\n');
+}).catch(err => {
+  console.error('HF download failed, continuing anyway:', err.message);
 });
