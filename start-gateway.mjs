@@ -33,7 +33,7 @@ const TELEGRAM_DM_POLICY = process.env.TELEGRAM_DM_POLICY || 'open';
 
 // Storage settings
 const STORAGE_SUBDIR = process.env.OPENCLAW_STORAGE_SUBDIR || 'openclaw';
-const STORAGE_BASE = process.env.RENDER || '/tmp/openclaw';
+const STORAGE_BASE = (process.env.RENDER === 'true' || process.env.RENDER === '1') ? '/tmp/openclaw' : (process.env.OPENCLAW_STORAGE_PATH || '/tmp/openclaw');
 
 // Generate or load gateway token
 const TOKEN_FILE = join(STORAGE_BASE, '.gateway-token');
@@ -194,7 +194,7 @@ console.log(`Wrote config to ${CONFIG_PATH}\n`);
 // Start OpenClaw Gateway
 console.log(`Starting OpenClaw Gateway on port ${GATEWAY_PORT}...`);
 
-const gatewayProcess = spawn('npx', ['openclaw', 'gateway', '--bind', '0.0.0.0', '--port', String(GATEWAY_PORT)], {
+const gatewayProcess = spawn('npx', ['openclaw', 'gateway', '--bind', 'lan', '--port', String(GATEWAY_PORT)], {
   stdio: 'inherit',
   env: {
     ...process.env,
