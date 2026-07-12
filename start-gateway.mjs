@@ -73,7 +73,7 @@ const config = {
   gateway: {
     mode: 'local',
     port: GATEWAY_PORT,
-    bind: '0.0.0.0',
+    bind: 'loopback',
     auth: { mode: 'token' },
     controlUi: {
       enabled: true,
