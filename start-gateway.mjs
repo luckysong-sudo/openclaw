@@ -424,3 +424,24 @@ downloadFromHF().then(() => {
 }).catch(err => {
   console.error('HF download failed, continuing anyway:', err.message);
 });
+
+// Start Web Terminal (optional, port 10001)
+const WEB_TERMINAL_ENABLED = process.env.WEB_TERMINAL_ENABLED === 'true';
+if (WEB_TERMINAL_ENABLED) {
+  console.log('\n🖥️  Starting Web Terminal...');
+  const terminalScript = join(process.cwd(), 'web-terminal.mjs');
+  if (existsSync(terminalScript)) {
+    const terminalProcess = spawn('node', [terminalScript], {
+      stdio: 'inherit',
+      env: {
+        ...process.env,
+        WEB_TERMINAL_PORT: process.env.WEB_TERMINAL_PORT || '10001',
+      },
+      detached: true,
+    });
+    terminalProcess.unref();
+    console.log('Web Terminal started on port 10001');
+  } else {
+    console.log('Web Terminal script not found');
+  }
+}
