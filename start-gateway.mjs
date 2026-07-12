@@ -73,7 +73,7 @@ const config = {
   gateway: {
     mode: 'local',
     port: GATEWAY_PORT,
-    bind: 'loopback',
+    bind: 'lan',
     auth: { mode: 'token' },
     controlUi: {
       enabled: true,
@@ -182,6 +182,11 @@ if (TELEGRAM_BOT_TOKEN && TELEGRAM_ENABLED) {
     };
   }
 
+  // Add wildcard to allowFrom for open DM policy
+  if (dmPolicy === 'open') {
+    config.channels.telegram.allowFrom = ['*'];
+  }
+
   console.log(`Telegram configured: dmPolicy=${dmPolicy}, allowedUsers=${allowedUserIds.length}`);
 } else if (TELEGRAM_BOT_TOKEN && !TELEGRAM_ENABLED) {
   console.log('Telegram disabled by OPENCLAW_TELEGRAM_ENABLED=false');
@@ -197,7 +202,7 @@ console.log(`Starting OpenClaw Gateway on port ${GATEWAY_PORT}...`);
 const gatewayArgs = [
   'openclaw', 'gateway',
   '--port', String(GATEWAY_PORT),
-  '--bind', 'loopback',
+  '--bind', 'lan',
 ];
 if (GATEWAY_TOKEN) {
   gatewayArgs.push('--token', GATEWAY_TOKEN);
