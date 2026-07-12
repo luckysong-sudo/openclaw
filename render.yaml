@@ -5,7 +5,19 @@ services:
     region: singapore
     plan: free
     buildCommand: npm install
-    startCommand: node start-gateway.mjs
+    startCommand: |
+      bash -c '
+      # 设置 Swap（如果不存在）
+      if ! swapon --show > /dev/null 2>&1; then
+        echo "Setting up swap..."
+        dd if=/dev/zero of=/swapfile bs=1M count=512 status=none 2>/dev/null && \
+        chmod 600 /swapfile && \
+        mkswap /swapfile 2>/dev/null && \
+        swapon /swapfile 2>/dev/null && \
+        echo "Swap enabled" || echo "Swap setup skipped"
+      fi
+      node start-gateway.mjs
+      '
     envVars:
       - key: PORT
         value: 10000
