@@ -125,17 +125,20 @@ async function downloadFromHF() {
       env: { ...process.env }
     });
     
-    // 下载数据集
+    // 下载数据集到临时目录
     execSync(`huggingface-cli download ${HF_DATASET_ID} data/ --repo-type dataset --local-dir "${hfDataDir}"`, {
       stdio: 'inherit',
       env: { ...process.env }
     });
     
-    // 复制数据到存储目录
+    // 复制所有数据到 STORAGE_BASE（包括 memory/, workspace/, 等）
     const srcDir = join(hfDataDir, 'data');
     if (existsSync(srcDir)) {
+      // 复制所有子目录和文件到 STORAGE_BASE
       execSync(`cp -r ${srcDir}/* ${STORAGE_BASE}/ 2>/dev/null || true`, { shell: '/bin/bash' });
-      console.log('✅ 记忆数据已恢复');
+      console.log('✅ 记忆数据已从 Hugging Face 恢复');
+    } else {
+      console.log('ℹ️  Hugging Face 上没有数据（首次运行）');
     }
     
     // 清理下载目录
@@ -155,30 +158,35 @@ async function uploadToHF() {
   }
   
   console.log('📤 上传记忆数据到 Hugging Face...');
+  console.log(`   存储根目录: ${STORAGE_BASE}`);
+  console.log(`   数据集: ${HF_DATASET_ID}`);
+  
   try {
     const uploadDir = join(STORAGE_BASE, 'hf-upload');
     mkdirSync(uploadDir, { recursive: true });
     
-    // 复制需要持久化的数据
-    const srcPath = join(STORAGE_BASE, STORAGE_SUBDIR);
-    if (existsSync(srcPath)) {
-      execSync(`cp -r ${srcPath}/* ${uploadDir}/ 2>/dev/null || true`, { shell: '/bin/bash' });
+    // 复制 STORAGE_BASE 下的所有数据到上传目录
+    // 这包括: memory/, workspace/, openclaw/, temp-mail-cache.json 等
+    if (existsSync(STORAGE_BASE)) {
+      const copyCmd = `cd "${STORAGE_BASE}" && tar cf - . 2>/dev/null | (cd "${uploadDir}" && tar xf -)`;
+      execSync(copyCmd, { shell: '/bin/bash', stdio: 'pipe' });
+      console.log('   数据已准备上传');
     }
     
-    // 登录并上传
+    // 登录并上传整个目录
     execSync(`echo "${HF_TOKEN}" | huggingface-cli login --token-stdin`, { 
       stdio: 'pipe',
       env: { ...process.env }
     });
     
-    execSync(`cd "${uploadDir}" && huggingface-cli upload ${HF_DATASET_ID} data/ --repo-type dataset`, {
+    execSync(`cd "${uploadDir}" && huggingface-cli upload ${HF_DATASET_ID} . data/ --repo-type dataset`, {
       stdio: 'inherit',
       env: { ...process.env }
     });
     
     // 清理上传目录
     execSync(`rm -rf "${uploadDir}"`, { shell: '/bin/bash' });
-    console.log('✅ 记忆数据已保存');
+    console.log('✅ 记忆数据已保存到 Hugging Face');
   } catch (error) {
     console.error('❌ 上传失败:', error.message);
   }
