@@ -194,7 +194,16 @@ console.log(`Wrote config to ${CONFIG_PATH}\n`);
 // Start OpenClaw Gateway
 console.log(`Starting OpenClaw Gateway on port ${GATEWAY_PORT}...`);
 
-const gatewayProcess = spawn('npx', ['openclaw', 'gateway', '--bind', 'lan', '--port', String(GATEWAY_PORT)], {
+const gatewayArgs = [
+  'openclaw', 'gateway',
+  '--port', String(GATEWAY_PORT),
+  '--bind', 'loopback',
+];
+if (GATEWAY_TOKEN) {
+  gatewayArgs.push('--token', GATEWAY_TOKEN);
+}
+
+const gatewayProcess = spawn(gatewayArgs[0], gatewayArgs.slice(1), {
   stdio: 'inherit',
   env: {
     ...process.env,
