@@ -246,6 +246,27 @@ const config = {
   tools: {
     fs: { workspaceOnly: true },
     elevated: { enabled: false },
+    shell: {
+      enabled: true,
+      allowedCommands: [
+        'node',
+        'npm',
+        'curl',
+        'wget',
+        'ls',
+        'cat',
+        'echo',
+        'date',
+        'whoami',
+        'pwd',
+        'env',
+        'free',
+        'df',
+        'temp-mail.sh',
+        'huggingface-cli',
+      ],
+      workspaceBound: true,
+    },
   },
   skills: {
     install: {
