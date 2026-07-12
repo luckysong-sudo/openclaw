@@ -1,0 +1,26 @@
+{
+  "name": "openclaw-agnes-render",
+  "version": "1.0.0",
+  "description": "OpenClaw Agnes AI assistant deployed on Render.com",
+  "type": "module",
+  "main": "start-gateway.mjs",
+  "scripts": {
+    "start": "node start-gateway.mjs",
+    "dev": "node start-gateway.mjs",
+    "setup-telegram": "node setup-telegram.mjs"
+  },
+  "keywords": [
+    "openclaw",
+    "agnes-ai",
+    "telegram",
+    "render"
+  ],
+  "author": "",
+  "license": "MIT",
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "dependencies": {
+    "openclaw": "latest"
+  }
+}

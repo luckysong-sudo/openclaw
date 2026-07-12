@@ -1,0 +1,10 @@
+Huggingface的后台管理key：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
+以下是5个Agnes'的tokenapikey
+key1：sk-PaR1n8sxiGqJfO3r3SqF90R6TriMVMTfoltoSihTiKi5Zj89
+key2：sk-7Ipe8KbYzAQokj2j1etXjIqRpi8h0czZ3h8fkXJn3t4qK2Ev
+key3：sk-dLaqBD6i3Ag56ssPyOuNRcQLdFKd6HRHz9oL9BtCdt9okARi
+key4：sk-8Jr6nl3rir5wkggTOBpTXdwaLzYKR2gbOshDa1la1UmI9fdd
+key5：sk-QDYbL4xrjogUu0hVUnnlI7cTlsdnRkImYus6htssW40zUUFZ
+以下这个网址是AgnesAI的OpenClaw 集成指南
+https://agnes-ai.com/zh-Hans/docs/cid1
+以下是telegram的apikey：8766685442:AAEZlbeDCLUmQi-PxbTx3ZMsSWJfPmKrG8A

@@ -1,0 +1,38 @@
+services:
+  - type: web
+    name: openclaw-agnes
+    env: node
+    region: singapore
+    plan: free
+    buildCommand: npm install
+    startCommand: node start-gateway.mjs
+    envVars:
+      - key: PORT
+        value: 10000
+      - key: NODE_ENV
+        value: production
+      - key: OPENCLAW_PROVIDER_ID
+        value: agnes
+      - key: OPENCLAW_MODEL_ID
+        value: agnes-2.0-flash
+      - key: AGNES_BASE_URL
+        value: https://apihub.agnes-ai.com/v1
+      - key: OPENCLAW_DISABLE_DEVICE_PAIRING
+        value: "true"
+      - key: TZ
+        value: Asia/Shanghai
+      - key: OPENCLAW_CONTEXT_WINDOW
+        value: 200000
+      - key: OPENCLAW_MAX_TOKENS
+        value: 8192
+      - key: AGNES_API_KEY
+        value: "sk-PaR1n8sxiGqJfO3r3SqF90R6TriMVMTfoltoSihTiKi5Zj89"
+        sync: false
+      - key: TELEGRAM_BOT_TOKEN
+        value: "8809843534:AAEm_k4xBB7yoUSvb1IdzVtVsJdwALfm9PQ"
+        sync: false
+      - key: TELEGRAM_AUTO_ALLOW_FIRST_DM
+        value: "true"
+      - key: OPENCLAW_TELEGRAM_ENABLED
+        value: "true"
+    autoDeploy: true
