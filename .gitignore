@@ -8,3 +8,8 @@ tmp/
 
 # Temp Mail cache
 *temp-mail-cache.json
+
+# Memory data
+memory/
+*.chroma.db
+*.qdrant

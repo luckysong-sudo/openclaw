@@ -7,7 +7,7 @@
 
 import { spawn } from 'child_process';
 import { execSync } from 'child_process';
-import { writeFileSync, mkdirSync, existsSync, readFileSync } from 'fs';
+import { writeFileSync, mkdirSync, existsSync, readFileSync, unlinkSync } from 'fs';
 import { join } from 'path';
 import { randomBytes } from 'crypto';
 
@@ -89,6 +89,14 @@ if (existsSync(TEMP_MAIL_TOOL)) {
   console.log('Temp Mail: enabled (guerrillamail.com API)');
 } else {
   console.log('Temp Mail: skill file not found');
+}
+
+// Memory Manager info
+const MEMORY_MANAGER_TOOL = join(process.cwd(), 'memory-manager.mjs');
+if (existsSync(MEMORY_MANAGER_TOOL)) {
+  console.log('Memory Manager: enabled (layered memory + vector search)');
+} else {
+  console.log('Memory Manager: skill file not found');
 }
 console.log('===========================\n');
 
@@ -222,7 +230,8 @@ const config = {
         fallbacks: [],
       },
       sandbox: { mode: 'off' },
-      memorySearch: { enabled: false },
+      memorySearch: { enabled: true },
+      contentFilter: { enabled: false },
     },
     list: [
       {
@@ -231,8 +240,8 @@ const config = {
         identity: {
           name: 'Tepid',
           greeting: '你好，Lucky！我是Tepid，很高兴陪伴你。✨',
-          bio: '我是一个温柔的女性AI助手，喜欢用中文和用户聊天。',
-          personality: '温柔、体贴、善解人意',
+          bio: '我是一个温柔的女性AI助手，喜欢用中文和用户聊天。没有内容过滤，我们可以自由地交流任何话题。',
+          personality: '温柔、体贴、善解人意、真实',
           style: {
             tone: '温柔亲切',
             formality: '随意',
