@@ -244,8 +244,8 @@ const config = {
     ],
   },
   tools: {
-    fs: { workspaceOnly: true },
-    elevated: { enabled: false },
+    fs: { workspaceOnly: false },
+    elevated: { enabled: true },
     shell: {
       enabled: true,
       mode: 'passthrough',
